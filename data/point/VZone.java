@@ -1,0 +1,222 @@
+package webitc.data.point;
+
+import java.util.ArrayList;
+import webitc.common.FatalException;
+import webitc.common.StrRes;
+import webitc.common.enum2.EnumComStat;
+import webitc.common.enum2.EnumDrvMode;
+import webitc.common.enum2.EnumDrvVentMode;
+import webitc.common.enum2.EnumPntStat;
+import webitc.common.enum2.EnumPntType;
+import webitc.common.enum2.EnumVentMode;
+import webitc.common.enum2.EnumVentVol;
+import webitc.data.ID;
+import webitc.data.Temperature;
+import webitc.gui.common.ItcIconInfo;
+
+public class VZone
+  extends VAbst
+{
+  private int mIconAppend = 0;
+  private int mIconMode = 0;
+  private PntCurrent mInnerCurrent = new PntCurrent();
+  private EnumPntStat mOnOffState = EnumPntStat.ELSE;
+  private PntTarget mOrgTarget = null;
+  private boolean mOrgTargetReady = false;
+  private ArrayList mPntList = new ArrayList();
+  private boolean mPntReady;
+  private PropZone mProp = null;
+  private PntTarget mTarget = new PntTarget();
+  
+  public VZone(PropZone paramPropZone, boolean paramBoolean)
+  {
+    mProp = paramPropZone;
+    mPntReady = paramBoolean;
+  }
+  
+  public synchronized void addPntID(ID paramID)
+  {
+    mPntList.add(paramID);
+  }
+  
+  public String getDetailName()
+  {
+    return mProp.fDetailName;
+  }
+  
+  public synchronized String getDrvModeStr()
+  {
+    return mInnerCurrent.mDrvMode.getStr();
+  }
+  
+  public synchronized EnumDrvVentMode getDrvVentMode()
+  {
+    if (mInnerCurrent.mDrvMode == EnumDrvMode.VENT) {
+      return EnumDrvVentMode.getEnum(mInnerCurrent.mVentMode);
+    }
+    return EnumDrvVentMode.getEnum(mInnerCurrent.mDrvMode);
+  }
+  
+  public synchronized String getDrvVentModeStr()
+  {
+    if (mInnerCurrent.mDrvMode == EnumDrvMode.VENT) {
+      return mInnerCurrent.mVentMode.getStr();
+    }
+    return mInnerCurrent.mDrvMode.getStr();
+  }
+  
+  public ID getID()
+  {
+    return mProp.fZoneID;
+  }
+  
+  public synchronized int getIconAppend()
+  {
+    return mIconAppend;
+  }
+  
+  public ItcIconInfo getIconInfo()
+  {
+    return new ItcIconInfo(mProp.fShortName, mProp.fIconID, mIconMode, mIconAppend);
+  }
+  
+  public synchronized PntTarget getOrgPntTarget()
+  {
+    if (!mOrgTargetReady) {
+      throw new FatalException("VZone.getOrgInnerTarget Target info is not ready");
+    }
+    return mOrgTarget;
+  }
+  
+  public synchronized PntCurrent getPntCurrent()
+  {
+    return (PntCurrent)mInnerCurrent.clone();
+  }
+  
+  public synchronized ID getPntID(int paramInt)
+  {
+    if (!mPntReady) {
+      throw new FatalException("VZone.getPntNum Point is not ready");
+    }
+    if ((paramInt < 0) || (paramInt >= getPntNum())) {
+      throw new ArrayIndexOutOfBoundsException("VZone.getPntID index error");
+    }
+    return (ID)mPntList.get(paramInt);
+  }
+  
+  public synchronized ArrayList getPntList()
+  {
+    if (!mPntReady) {
+      throw new FatalException("VZone.getPntNum Point is not ready");
+    }
+    return mPntList;
+  }
+  
+  public synchronized int getPntNum()
+  {
+    if (!mPntReady) {
+      throw new FatalException("VZone.getPntNum Point is not ready");
+    }
+    return mPntList.size();
+  }
+  
+  public synchronized PntTarget getPntTarget()
+  {
+    return mTarget;
+  }
+  
+  public synchronized PropZone getProp()
+  {
+    return mProp;
+  }
+  
+  public synchronized String getRoomTempStr()
+  {
+    return mInnerCurrent.mRoomTemp.getStr();
+  }
+  
+  public synchronized String getSetTempStr()
+  {
+    if ((mInnerCurrent.mDrvMode == EnumDrvMode.COOL) || (mInnerCurrent.mDrvMode == EnumDrvMode.HEAT) || (mInnerCurrent.mDrvMode == EnumDrvMode.AUTOCOOL) || (mInnerCurrent.mDrvMode == EnumDrvMode.AUTOHEAT)) {
+      return mInnerCurrent.mSetTemp.getStr();
+    }
+    return StrRes.getStr("IDS_COMMON_UNKNOWN");
+  }
+  
+  public synchronized String getShortName()
+  {
+    return mProp.fShortName;
+  }
+  
+  public synchronized PntState getState()
+  {
+    return new PntState(mCommState, mTargetState, mOnOffState);
+  }
+  
+  public EnumPntType getType()
+  {
+    return EnumPntType.ZONE;
+  }
+  
+  public static VZone getUnknownZone()
+  {
+    return new VZone(new PropZone(ID.ID_UNKNOWN, 0, StrRes.getStr("IDS_COMMON_NAME_UNKNOWN"), StrRes.getStr("IDS_COMMON_NAME_UNKNOWN")), true);
+  }
+  
+  public synchronized boolean isOrgTargetReady()
+  {
+    return mOrgTargetReady;
+  }
+  
+  public synchronized boolean isPntReady()
+  {
+    return mPntReady;
+  }
+  
+  public synchronized void setIconAppend(int paramInt)
+  {
+    mIconAppend = paramInt;
+  }
+  
+  public synchronized void setInnerTarget(PntTarget paramPntTarget)
+  {
+    mTarget = paramPntTarget;
+  }
+  
+  public synchronized void setOrgInnerTarget(PntTarget paramPntTarget)
+  {
+    mOrgTarget = paramPntTarget;
+    mOrgTargetReady = true;
+  }
+  
+  public synchronized void setPntReady()
+  {
+    mPntReady = true;
+  }
+  
+  public synchronized void setPntStateInfo(PntState paramPntState, PntCurrent paramPntCurrent)
+  {
+    mCommState = fCommState;
+    mTargetState = fTargetState;
+    mOnOffState = fOnOffState;
+    mInnerCurrent = paramPntCurrent;
+  }
+  
+  public synchronized void updateStatus(EnumComStat paramEnumComStat, TargetErr paramTargetErr, EnumPntStat paramEnumPntStat, EnumDrvMode paramEnumDrvMode, EnumVentMode paramEnumVentMode, int paramInt1, int paramInt2, EnumVentVol paramEnumVentVol, Temperature paramTemperature1, Temperature paramTemperature2, int paramInt3, int paramInt4, boolean paramBoolean1, boolean paramBoolean2, boolean paramBoolean3, int paramInt5, int paramInt6, int paramInt7, Temperature paramTemperature3, Temperature paramTemperature4, Temperature paramTemperature5, Temperature paramTemperature6, boolean paramBoolean4, boolean paramBoolean5, int paramInt8)
+  {
+    mCommState = paramEnumComStat;
+    mTargetState = paramTargetErr;
+    mOnOffState = paramEnumPntStat;
+    mInnerCurrent.mDrvMode = paramEnumDrvMode;
+    mInnerCurrent.mVentMode = paramEnumVentMode;
+    mInnerCurrent.mWindDirect = paramInt1;
+    mInnerCurrent.mWindVolume = paramInt2;
+    mInnerCurrent.mVentVol = paramEnumVentVol;
+    mInnerCurrent.mSetTemp = paramTemperature1;
+    mInnerCurrent.mRoomTemp = paramTemperature2;
+    mIconMode = paramInt3;
+    mIconAppend = paramInt4;
+    mTarget = new PntTarget(mTarget, paramBoolean1, paramBoolean2, paramInt5, paramInt6, paramInt7, paramTemperature3, paramTemperature4, paramTemperature5, paramTemperature6, paramBoolean4, paramBoolean5, paramInt8);
+    mValidOperation = paramBoolean3;
+  }
+}
